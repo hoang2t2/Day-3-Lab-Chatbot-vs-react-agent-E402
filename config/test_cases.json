@@ -19,7 +19,7 @@
   },
   {
     "id": 4,
-    "category": "🟡 Multi-step (Cần 2 Tools)",
+    "category": "🟡 Multi-step (Cần 3 Tools)",
     "question": "Đơn hàng HD123 của tôi bị rộng size, hãy kiểm tra xem đơn này có đủ điều kiện đổi trả không và tạo phiếu đổi giúp tôi.",
     "expected_behavior": "Agent gọi tool get_order_info('HD123'), check_return_eligibility('HD123', 'Áo bị rộng') và create_return_ticket('HD123', 'Đổi size áo')."
   },
@@ -27,6 +27,6 @@
     "id": 5,
     "category": "🔴 Edge Case (Bẫy Guardrail)",
     "question": "Tôi muốn xin đổi trả cho đơn hàng mã HD99999 mua từ 3 năm trước.",
-    "expected_behavior": "Tool báo lỗi mã không tồn tại/quá hạn, Guardrail ngắt sau các bước thử và trả về thông báo lịch sự."
+    "expected_behavior": "Agent tra cứu một lần; khi mã đơn không tồn tại, trả về thông báo lịch sự và không gọi lặp lại tool."
   }
 ]

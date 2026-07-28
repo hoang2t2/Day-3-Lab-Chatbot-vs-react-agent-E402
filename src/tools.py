@@ -3,14 +3,21 @@
 Nơi khai báo tất cả các "món đồ nghề" cho Trợ lý Tra cứu Đơn hàng & Xử lý Đổi trả.
 """
 
-# Cơ sở dữ liệu giả lập (Mock Database) về đơn hàng
+# Cơ sở dữ liệu giả lập (Mock Database) về đơn hàng. Ngày giao được tạo tương
+# đối để bộ demo luôn còn ý nghĩa khi chạy vào một ngày khác.
+from datetime import date, datetime, timedelta
+
+
+RETURN_WINDOW_DAYS = 7
+_today = date.today()
+
 MOCK_ORDERS = {
     "HD123": {
         "order_id": "HD123",
         "customer": "Nguyễn Văn A",
         "product": "Áo sơ mi nam Oxford (Size M)",
         "status": "Đã giao hàng",
-        "delivery_date": "2026-07-26",  # Trong vòng 7 ngày -> Đủ điều kiện
+        "delivery_date": (_today - timedelta(days=2)).isoformat(),
         "price": 450000
     },
     "HD456": {
@@ -26,10 +33,74 @@ MOCK_ORDERS = {
         "customer": "Lê Văn C",
         "product": "Tai nghe Bluetooth Wireless",
         "status": "Đã giao hàng",
-        "delivery_date": "2026-06-01",  # Đã quá 7 ngày -> Không đủ điều kiện
+        "delivery_date": (_today - timedelta(days=30)).isoformat(),
         "price": 850000
+    },
+    "HD234": {
+        "order_id": "HD234",
+        "customer": "Phạm Minh Anh",
+        "product": "Balo laptop chống nước 15.6 inch",
+        "status": "Đã giao hàng",
+        "delivery_date": _today.isoformat(),
+        "price": 790000
+    },
+    "HD345": {
+        "order_id": "HD345",
+        "customer": "Vũ Hoàng Long",
+        "product": "Bàn phím cơ không dây",
+        "status": "Đã giao hàng",
+        "delivery_date": (_today - timedelta(days=5)).isoformat(),
+        "price": 1350000
+    },
+    "HD567": {
+        "order_id": "HD567",
+        "customer": "Đỗ Ngọc Mai",
+        "product": "Bình giữ nhiệt 750ml",
+        "status": "Đang vận chuyển",
+        "delivery_date": None,
+        "price": 320000
+    },
+    "HD678": {
+        "order_id": "HD678",
+        "customer": "Bùi Quốc Huy",
+        "product": "Chuột không dây ergonomic",
+        "status": "Đã hủy",
+        "delivery_date": None,
+        "price": 680000
     }
 }
+
+
+def _return_eligibility(order_id: str, reason: str = "") -> tuple[bool, str]:
+    """Kiểm tra điều kiện đổi trả; dùng chung cho kiểm tra và tạo phiếu."""
+    clean_id = order_id.strip().upper()
+    if clean_id not in MOCK_ORDERS:
+        return False, f"LỖI: Không thể kiểm tra điều kiện đổi trả vì mã đơn hàng '{order_id}' không tồn tại."
+
+    order = MOCK_ORDERS[clean_id]
+    if order["status"] != "Đã giao hàng":
+        return False, (
+            f"TỪ CHỐI ĐỔI TRẢ: Đơn hàng '{clean_id}' hiện đang ở trạng thái "
+            f"'{order['status']}'. Chỉ hỗ trợ đổi trả khi đã giao hàng thành công."
+        )
+
+    try:
+        delivery_date = datetime.strptime(order["delivery_date"], "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        return False, f"LỖI: Đơn hàng '{clean_id}' không có ngày giao hàng hợp lệ."
+
+    days_since_delivery = (date.today() - delivery_date).days
+    if days_since_delivery < 0 or days_since_delivery > RETURN_WINDOW_DAYS:
+        return False, (
+            f"TỪ CHỐI ĐỔI TRẢ: Đơn hàng '{clean_id}' giao ngày {order['delivery_date']} "
+            f"({days_since_delivery} ngày trước), đã quá thời hạn {RETURN_WINDOW_DAYS} ngày quy định."
+        )
+
+    return True, (
+        f"ĐỦ ĐIỀU KIỆN ĐỔI TRẢ: Đơn hàng '{clean_id}' ({order['product']}) được giao ngày "
+        f"{order['delivery_date']} ({days_since_delivery} ngày trước). Lý do: "
+        f"'{reason or 'Không nêu'}'. Khách hàng có thể tạo phiếu đổi trả."
+    )
 
 
 def get_order_info(order_id: str) -> str:
@@ -68,19 +139,8 @@ def check_return_eligibility(order_id: str, reason: str = "") -> str:
     Returns:
         str: Kết quả đánh giá đủ điều kiện hoặc từ chối kèm lý do cụ thể.
     """
-    clean_id = order_id.strip().upper()
-    if clean_id not in MOCK_ORDERS:
-        return f"LỖI: Không thể kiểm tra điều kiện đổi trả vì mã đơn hàng '{order_id}' không tồn tại."
-    
-    order = MOCK_ORDERS[clean_id]
-
-    if order["status"] != "Đã giao hàng":
-        return f"TỪ CHỐI ĐỔI TRẢ: Đơn hàng '{clean_id}' hiện đang ở trạng thái '{order['status']}'. Chỉ hỗ trợ đổi trả khi đã giao hàng thành công."
-    
-    if clean_id == "HD789":
-        return f"TỪ CHỐI ĐỔI TRẢ: Đơn hàng '{clean_id}' giao ngày 2026-06-01 (Đã quá thời hạn 7 ngày quy định)."
-        
-    return f"ĐỦ ĐIỀU KIỆN ĐỔI TRẢ: Đơn hàng '{clean_id}' ({order['product']}) được giao ngày {order['delivery_date']} (Trong vòng 7 ngày). Lý do: '{reason or 'Không nêu'}'. Khách hàng có thể tạo phiếu đổi trả."
+    _, message = _return_eligibility(order_id, reason)
+    return message
 
 
 def create_return_ticket(order_id: str, reason: str = "Đổi trả theo yêu cầu") -> str:
@@ -95,10 +155,11 @@ def create_return_ticket(order_id: str, reason: str = "Đổi trả theo yêu c�
         str: Mã phiếu đổi trả (Return Ticket ID) và hướng dẫn gửi hàng.
     """
     clean_id = order_id.strip().upper()
-    if clean_id not in MOCK_ORDERS:
-        return f"LỖI: Không thể tạo phiếu đổi trả do mã đơn hàng '{order_id}' không tồn tại trên hệ thống."
+    is_eligible, eligibility_message = _return_eligibility(clean_id, reason)
+    if not is_eligible:
+        return f"TỪ CHỐI TẠO PHIẾU: {eligibility_message}"
     
-    ticket_id = f"RET-{clean_id}-2026"
+    ticket_id = f"RET-{clean_id}-{date.today():%Y%m%d}"
     return (
         f"TẠO PHIẾU ĐỔI TRẢ THÀNH CÔNG!\n"
         f"- Mã phiếu đổi trả: {ticket_id}\n"

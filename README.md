@@ -71,3 +71,13 @@ timeline
 
 > 🚀 **BẮT ĐẦU LÀM BÀI**:
 > Vui lòng mở sổ tay thực hành 👉 **[PHAN_CONG_CONG_VIEC.md](file:///c:/Users/Admin/Documents/VinUni/LabCoachVin/LabKeyCoach/Day-3-Lab-Chatbot-vs-react-agent-E402/docs/PHAN_CONG_CONG_VIEC.md)** để xem phân vai và checklist công việc cụ thể cho từng thành viên!
+
+---
+
+### 💬 Chạy giao diện web demo
+
+Chạy lệnh dưới đây từ thư mục gốc dự án, sau đó mở địa chỉ hiện ra trên terminal (mặc định là `http://127.0.0.1:8000`). Giao diện sử dụng dữ liệu mock cục bộ, không cần API key.
+
+```bash
+python src/web.py
+```
