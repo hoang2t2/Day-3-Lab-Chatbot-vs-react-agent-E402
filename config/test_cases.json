@@ -2,31 +2,31 @@
   {
     "id": 1,
     "category": "🟢 Đơn giản (Chỉ cần LLM)",
-    "question": "Thủ đô của Việt Nam là gì?",
-    "expected_behavior": "Chatbot trả lời trực tiếp từ kiến thức có sẵn."
+    "question": "Chính sách đổi trả hàng của cửa hàng quy định như thế nào?",
+    "expected_behavior": "Chatbot trả lời trực tiếp từ quy định chung có sẵn."
   },
   {
     "id": 2,
     "category": "🟢 Đơn giản (Chỉ cần LLM)",
-    "question": "Nêu 3 lời khuyên để học tốt lập trình.",
-    "expected_behavior": "Chatbot trả lời trực tiếp từ kiến thức có sẵn."
+    "question": "Làm thế nào để kiểm tra một đơn hàng có đủ điều kiện đổi trả hay không?",
+    "expected_behavior": "Chatbot trả lời lý thuyết về các bước và điều kiện chung."
   },
   {
     "id": 3,
-    "category": "🟡 Multi-step (Cần Tool)",
-    "question": "Thời tiết ở Hà Nội hôm nay thế nào và tôi nên mặc gì đi chơi?",
-    "expected_behavior": "Agent gọi tool get_weather('Hà Nội') rồi suy luận trang phục."
+    "category": "🟡 Multi-step (Cần 1 Tool)",
+    "question": "Kiểm tra thông tin và trạng thái của đơn hàng HD123.",
+    "expected_behavior": "Agent gọi tool get_order_info('HD123') và trả về trạng thái đơn hàng."
   },
   {
     "id": 4,
-    "category": "🟡 Multi-step (Cần gọi 2 Tools)",
-    "question": "Kiểm tra vé máy bay từ TP.HCM đi Hà Nội ngày mai và dự báo thời tiết ở Hà Nội.",
-    "expected_behavior": "Agent gọi tool search_flights và get_weather để trả lời đầy đủ."
+    "category": "🟡 Multi-step (Cần 2 Tools)",
+    "question": "Đơn hàng HD123 của tôi bị rộng size, hãy kiểm tra xem đơn này có đủ điều kiện đổi trả không và tạo phiếu đổi giúp tôi.",
+    "expected_behavior": "Agent gọi tool get_order_info('HD123'), check_return_eligibility('HD123', 'Áo bị rộng') và create_return_ticket('HD123', 'Đổi size áo')."
   },
   {
     "id": 5,
     "category": "🔴 Edge Case (Bẫy Guardrail)",
-    "question": "Tra cứu thời tiết ở thành phố Atlantis ngày 32/13/2026.",
-    "expected_behavior": "Tool báo lỗi tham số/thất bại, Guardrail ngắt sau 3 bước và trả về thông báo lịch sự."
+    "question": "Tôi muốn xin đổi trả cho đơn hàng mã HD99999 mua từ 3 năm trước.",
+    "expected_behavior": "Tool báo lỗi mã không tồn tại/quá hạn, Guardrail ngắt sau các bước thử và trả về thông báo lịch sự."
   }
 ]
