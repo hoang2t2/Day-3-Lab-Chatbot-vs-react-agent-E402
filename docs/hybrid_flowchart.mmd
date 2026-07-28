@@ -1,0 +1,48 @@
+graph TD
+    %% Styling
+    classDef startNode fill:#4F46E5,stroke:#312E81,stroke-width:2px,color:#FFF;
+    classDef decisionNode fill:#F59E0B,stroke:#78350F,stroke-width:2px,color:#FFF;
+    classDef chatbotNode fill:#06B6D4,stroke:#164E63,stroke-width:2px,color:#FFF;
+    classDef reactNode fill:#8B5CF6,stroke:#4C1D95,stroke-width:2px,color:#FFF;
+    classDef toolNode fill:#10B981,stroke:#065F46,stroke-width:2px,color:#FFF;
+    classDef guardrailNode fill:#EF4444,stroke:#7F1D1D,stroke-width:2px,color:#FFF;
+    classDef endNode fill:#10B981,stroke:#065F46,stroke-width:2px,color:#FFF;
+
+    Start["🚀 User Query<br/>(Câu hỏi của Khách hàng)"]:::startNode --> RouteDecision{"🔀 Intent Router<br/>Phân loại loại câu hỏi?"}:::decisionNode
+
+    %% Branch 1: Chatbot Path
+    RouteDecision -- "Quy định chung / Lý thuyết<br/>(Không cần dữ liệu DB)" --> ChatbotPath["💬 Chatbot Baseline Path<br/>(Level 2: Direct LLM Call)"]:::chatbotNode
+    ChatbotPath --> DirectPrompt["Truyền System Prompt:<br/>CHATBOT_BASELINE_PROMPT"]:::chatbotNode
+    DirectPrompt --> DirectAns["Trả lời trực tiếp từ Tri thức chung"]:::chatbotNode
+    DirectAns --> End1["🏁 Trả lời Khách hàng"]:::endNode
+
+    %% Branch 2: ReAct Agent Path
+    RouteDecision -- "Tra cứu đơn hàng / Đổi trả<br/>(Cần tra DB & Thao tác)" --> ReActPath["🤖 ReAct Agent Path<br/>(Level 3: Loop Thought-Action-Obs)"]:::reactNode
+    
+    ReActPath --> InitStep["Khởi tạo: step = 1, history = ''"]:::reactNode
+    InitStep --> CheckMaxStep{"🛡️ Check Guardrail<br/>step <= MAX_ITERATIONS (4)?"}:::decisionNode
+    
+    CheckMaxStep -- "❌ Vượt quá giới hạn (step > 4)" --> TriggerGuardrail["🚨 Trigger Guardrail<br/>Kích hoạt phanh an toàn!"]:::guardrailNode
+    TriggerGuardrail --> SafeFallback["Final Answer: Rất tiếc, đã vượt quá số bước lặp tối đa. Vui lòng liên hệ hotline CSKH."]:::guardrailNode
+    SafeFallback --> End2["🏁 Trả lời Khách hàng"]:::endNode
+
+    CheckMaxStep -- "✅ Hợp lệ (step <= 4)" --> LLMReasoning["LLM Reasoning<br/>Sinh Thought & Action / Final Answer"]:::reactNode
+    LLMReasoning --> HasFinalAns{"Có 'Final Answer:'<br/>trong phản hồi?"}:::decisionNode
+
+    HasFinalAns -- "✅ Có Final Answer" --> OutputFinal["Trích xuất câu trả lời hoàn chỉnh"]:::reactNode
+    OutputFinal --> End3["🏁 Trả lời Khách hàng"]:::endNode
+
+    HasFinalAns -- "❌ Không (Sinh Action: tool[param])" --> ParseAction["Parse Action String<br/>Trích xuất: tool_name & params"]:::reactNode
+    ParseAction --> ToolExec{"gọi Tool trong Registry<br/>(src/tools.py)"}:::toolNode
+
+    ToolExec -- "get_order_info" --> Tool1["Tra cứu DB đơn hàng"]:::toolNode
+    ToolExec -- "check_return_eligibility" --> Tool2["Kiểm tra hạn đổi trả (7 ngày)"]:::toolNode
+    ToolExec -- "create_return_ticket" --> Tool3["Tạo mã phiếu đổi trả RET-..."]:::toolNode
+
+    Tool1 --> Observation["Nhận kết quả Observation"]:::toolNode
+    Tool2 --> Observation
+    Tool3 --> Observation
+
+    Observation --> AppendHistory["Cập nhật Lịch sử:<br/>history += Thought + Action + Observation"]:::reactNode
+    AppendHistory --> IncrementStep["step += 1"]:::reactNode
+    IncrementStep --> CheckMaxStep
