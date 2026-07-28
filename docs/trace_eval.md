@@ -7,11 +7,11 @@
 
 | Tiêu chí | Điểm (1-5) | Lý do đánh giá |
 | :--- | :---: | :--- |
-| 🧠 **Multi-step Reasoning** | `4/5` | Cần suy luận từ tra cứu thời tiết đến chọn trang phục. |
-| 🛠️ **Tool Interaction** | `5/5` | Cần tra cứu dữ liệu thời gian thực qua API thời tiết/chuyến bay. |
-| 🔀 **Dynamic Decision** | `4/5` | Kết quả bước trước quyết định hành động bước sau. |
-| ⏳ **Long Horizon** | `3/5` | Quy trình gồm 2-3 bước xử lý ngắn. |
-| **TỔNG ĐIỂM FIT** | **16/20** | **KẾT LUẬN: BÀI TOÁN RẤT NÊN DÙNG REACT AGENT!** |
+| 🧠 **Multi-step Reasoning** | `5/5` | 	Phải tra đơn → lấy ngày giao → tính số ngày đã trôi qua → đối chiếu hạn đổi trả theo ngành hàng → mới quyết định được. Không bước nào bỏ được. |
+| 🛠️ **Tool Interaction** | `5/5` | Trạng thái đơn hàng và chính sách đổi trả nằm trong DB nội bộ, LLM không thể biết. Bắt buộc gọi tool. |
+| 🔀 **Dynamic Decision** | `4/5` | 	Kết quả bước trước đổi hẳn nhánh xử lý: đơn "Đang giao" → từ chối tạo yêu cầu; "Đã giao 5 ngày" → cho đổi trả; "Đã giao 40 ngày" → quá hạn. |
+| ⏳ **Long Horizon** | `3/5` | Luồng dài nhất 3 tool call, chưa cần memory dài hạn hay planning nhiều tầng. |
+| **TỔNG ĐIỂM FIT** | **16/20** | **	Bài toán rất nên dùng ReAct Agent.** |
 
 ---
 
